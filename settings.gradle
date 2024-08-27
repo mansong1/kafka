@@ -45,15 +45,20 @@ develocity {
     }
 }
 
+apply plugin: 'io.harness.gradle-cache'
+
 buildCache {
     local {
-        // This allows the build cache to be used locally or on GitHub Actions.
-        // Using the cache on GH should be safe since each job is run on a new VM
-        enabled = !isJenkins
+        // Local build cache is dangerous as it might produce inconsistent results
+        // in case developer modifies files while the build is running
+        enabled = false
     }
 
-    remote(develocity.buildCache) {
-        enabled = false
+    remote(io.harness.Cache) {
+        accountId = System.getenv('HARNESS_ACCOUNT_ID')
+        token = System.getenv('HARNESS_PAT')
+        push = "true"
+        endpoint = System.getenv('HARNESS_CACHE_SERVICE_ENDPOINT')
     }
 }
 
