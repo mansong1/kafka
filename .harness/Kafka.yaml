@@ -1,0 +1,86 @@
+pipeline:
+  name: Kafka
+  identifier: Kafka
+  projectIdentifier: Scrap
+  orgIdentifier: default
+  tags: {}
+  stages:
+    - stage:
+        name: Build-Test-Dockerize
+        identifier: BuildTestDockerize
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          caching:
+            enabled: true
+            paths: []
+            key: mansong-kafka-test
+          execution:
+            steps:
+              - step:
+                  type: Action
+                  name: Setup JDK
+                  identifier: Setup_JDK
+                  spec:
+                    uses: actions/setup-java@v3
+                    with:
+                      java-version: "11"
+                      distribution: temurin
+              - step:
+                  type: Action
+                  name: Set up Gradle
+                  identifier: Set_up_Gradle
+                  spec:
+                    uses: gradle/gradle-build-action@v2
+                    with:
+                      gradle-version: "8.5"
+              - step:
+                  type: Test
+                  name: Test
+                  identifier: Test_1
+                  spec:
+                    connectorRef: account.harnessImage
+                    image: gradle:8.5.0-jdk11
+                    shell: Sh
+                    command: |-
+
+                      gradle --build-cache unitTest -PmaxParallelForks=32 -PignoreFailures=true --continue --profile
+                    envVariables:
+                      CI: "true"
+                    intelligenceMode: true
+              - step:
+                  type: BuildAndPushDockerRegistry
+                  name: Build and Push
+                  identifier: Build_and_Push
+                  spec:
+                    connectorRef: account.Dockerhub
+                    repo: mansong/kafka
+                    tags:
+                      - <+pipeline.sequenceId>
+                    caching: true
+                    resources:
+                      limits:
+                        memory: 4Gi
+                        cpu: 2000m
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec: {}
+          slsa_provenance:
+            enabled: false
+        variables:
+          - name: PAT
+            type: Secret
+            description: ""
+            required: false
+            value: PAt_Anurag
+  properties:
+    ci:
+      codebase:
+        connectorRef: account.Github
+        repoName: kafka
+        build: <+input>
+        sparseCheckout: []
