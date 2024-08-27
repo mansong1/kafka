@@ -1,0 +1,14 @@
+inputSet:
+  name: pr
+  identifier: pr
+  orgIdentifier: default
+  projectIdentifier: Scrap
+  pipeline:
+    identifier: Kafka
+    properties:
+      ci:
+        codebase:
+          build:
+            type: PR
+            spec:
+              number: <+trigger.prNumber>
