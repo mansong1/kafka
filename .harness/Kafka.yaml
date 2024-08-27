@@ -13,7 +13,7 @@ pipeline:
         spec:
           cloneCodebase: true
           caching:
-            enabled: true
+            enabled: false
             paths: []
             key: mansong-kafka-test
           execution:
